@@ -41,7 +41,7 @@ def first_question():
 
 def second_question():
     raichu_data = fetch_data(
-'https://pokeapi.co/api/v2/pokemon-species/raichu')
+        'https://pokeapi.co/api/v2/pokemon-species/raichu')
     egg_groups = raichu_data[EGG_GROUP_LABEL]
     urls = [egg_group[URL_LABEL] for egg_group in egg_groups]
     pokemon_names = []
