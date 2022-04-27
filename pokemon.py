@@ -4,9 +4,11 @@ import requests
 EGG_GROUP_LABEL = 'egg_groups'
 MAX_WORKERS = 20
 NAME_LABEL = 'name'
+POKEMON_LABEL = 'pokemon'
 POKEMON_SPECIES_LABEL = 'pokemon_species'
 RESULTS_LABEL = 'results'
 URL_LABEL = 'url'
+WEIGHT_LABEL = 'weight'
 
 
 def is_first_generation_pokemon(url):
@@ -24,7 +26,7 @@ def fetch_data(url):
         response.raise_for_status()
         response_data = response.json()
         return response_data
-    except requests.exceptions.HTTPError as error:
+    except requests.exceptions.HTTPError:
         print("There is an error connecting to the API. Please try again later.")
         return
 
@@ -54,20 +56,12 @@ def second_question():
 def third_question():
     fighting_data = fetch_data(
         'https://pokeapi.co/api/v2/type/fighting')
-    fighting_pokemon = fighting_data['pokemon']
-    min_weight = None
-    max_weight = None
+    fighting_pokemon = fighting_data[POKEMON_LABEL]
+    pokemon_urls = []
     for pokemon in fighting_pokemon:
-        pokemon_url = pokemon['pokemon']['url']
+        pokemon_url = pokemon[POKEMON_LABEL][URL_LABEL] 
         if is_first_generation_pokemon(pokemon_url):
-            pokemon_response = requests.get(pokemon_url)
-            pokemon_data = pokemon_response.json()
-            weight = pokemon_data['weight']
-            if not min_weight and not max_weight:
-                min_weight = max_weight = weight
-                continue
-            if weight < min_weight:
-                min_weight = weight
-            if weight > max_weight:
-                max_weight = weight
-    return [max_weight, min_weight]
+            pokemon_urls.append(pokemon_url)
+    pokemon_responses = fetch_concurrently(pokemon_urls)
+    weights = [pokemon_data[WEIGHT_LABEL] for pokemon_data in pokemon_responses]
+    return [max(weights), min(weights)]
