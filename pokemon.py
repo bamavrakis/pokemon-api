@@ -1,7 +1,13 @@
+from concurrent.futures import ThreadPoolExecutor
 import requests
 
-RESULTS_LABEL = 'results'
+EGG_GROUP_LABEL = 'egg_groups'
+MAX_WORKERS = 20
 NAME_LABEL = 'name'
+POKEMON_SPECIES_LABEL = 'pokemon_species'
+RESULTS_LABEL = 'results'
+URL_LABEL = 'url'
+
 
 def is_first_generation_pokemon(url):
     split_url = url.split('/')
@@ -22,6 +28,11 @@ def fetch_data(url):
         print("There is an error connecting to the API. Please try again later.")
         return
 
+def fetch_concurrently(urls):
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        responses = list(executor.map(fetch_data, urls))
+        return responses
+
 def first_question():
     pokemon_data = fetch_data('https://pokeapi.co/api/v2/pokemon/?limit=-1')
     pokemon_data = pokemon_data[RESULTS_LABEL]
@@ -30,18 +41,15 @@ def first_question():
 
 def second_question():
     raichu_data = fetch_data(
-        'https://pokeapi.co/api/v2/pokemon-species/raichu')
-    egg_groups = raichu_data['egg_groups']
-    pokemon_species_names = []
-    for egg_group in egg_groups:
-        egg_group_url = egg_group['url']
-        egg_group_response = requests.get(egg_group_url)
-        egg_group_data = egg_group_response.json()
-        pokemon_species = egg_group_data['pokemon_species']
-        for species in pokemon_species:
-            pokemon_species_names.append(species['name'])
-    return len(list(set(pokemon_species_names)))
-
+'https://pokeapi.co/api/v2/pokemon-species/raichu')
+    egg_groups = raichu_data[EGG_GROUP_LABEL]
+    urls = [egg_group[URL_LABEL] for egg_group in egg_groups]
+    pokemon_names = []
+    pokemon_responses = fetch_concurrently(urls)
+    for response in pokemon_responses:
+        pokemon_species = response[POKEMON_SPECIES_LABEL]
+        pokemon_names += [pokemon[NAME_LABEL] for pokemon in pokemon_species]
+    return len(list(set(pokemon_names)))
 
 def third_question():
     fighting_data = fetch_data(
