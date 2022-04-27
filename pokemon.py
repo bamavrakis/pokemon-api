@@ -1,20 +1,16 @@
 import requests
 
-def at_counter(string):
-    a_counter = 0
-    has_at_substring = False
-    latest_character = None
-    for character in string:
-        if character == 'a': 
-            a_counter += 1
-        if latest_character == 'a' and character == 't': 
-            latest_character = character
-    return a_counter == 2 and has_at_substring
+RESULTS_LABEL = 'results'
+NAME_LABEL = 'name'
 
 def is_first_generation_pokemon(url):
     split_url = url.split('/')
     pokemon_id = int(split_url[-2])
     return pokemon_id <= 151
+
+def check_pokemon(pokemon):
+    pokemon_name = pokemon[NAME_LABEL]
+    return 'at' in pokemon_name and pokemon_name.count('a') == 2
 
 def fetch_data(url):
     try:
@@ -27,15 +23,10 @@ def fetch_data(url):
         return
 
 def first_question():
-    response = requests.get('https://pokeapi.co/api/v2/pokemon/?limit=1126')
-    response_data = response.json()
-    pokemons = response_data['results']
-    pokemon_count = 0 
-    for pokemon in pokemons:
-        pokemon_name = pokemon['name']
-        if at_counter(pokemon_name):
-            pokemon_count += 1
-    return pokemon_count
+    pokemon_data = fetch_data('https://pokeapi.co/api/v2/pokemon/?limit=-1')
+    pokemon_data = pokemon_data[RESULTS_LABEL]
+    filtered_pokemon = [pokemon for pokemon in pokemon_data if check_pokemon(pokemon)]
+    return len(filtered_pokemon)
 
 def second_question():
     raichu_data = fetch_data(
