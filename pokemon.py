@@ -5,36 +5,41 @@ def at_counter(string):
     has_at_substring = False
     latest_character = None
     for character in string:
-        if character == 'a':
+        if character == 'a': 
             a_counter += 1
-        if latest_character == 'a' and character == 't':
-            has_at_substring = True
-        latest_character = character
+        if latest_character == 'a' and character == 't': 
+            latest_character = character
     return a_counter == 2 and has_at_substring
-
 
 def is_first_generation_pokemon(url):
     split_url = url.split('/')
     pokemon_id = int(split_url[-2])
     return pokemon_id <= 151
 
+def fetch_data(url):
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        response_data = response.json()
+        return response_data
+    except requests.exceptions.HTTPError as error:
+        print("There is an error connecting to the API. Please try again later.")
+        return
 
 def pregunta_1():
     response = requests.get('https://pokeapi.co/api/v2/pokemon/?limit=1126')
     response_data = response.json()
     pokemons = response_data['results']
-    pokemon_count = 0
+    pokemon_count = 0 
     for pokemon in pokemons:
         pokemon_name = pokemon['name']
         if at_counter(pokemon_name):
             pokemon_count += 1
     return pokemon_count
 
-
 def pregunta_2():
-    raichu_data_response = requests.get(
+    raichu_data = fetch_data(
         'https://pokeapi.co/api/v2/pokemon-species/raichu')
-    raichu_data = raichu_data_response.json()
     egg_groups = raichu_data['egg_groups']
     pokemon_species_names = []
     for egg_group in egg_groups:
@@ -48,9 +53,8 @@ def pregunta_2():
 
 
 def pregunta_3():
-    fighting_data_response = requests.get(
+    fighting_data = fetch_data(
         'https://pokeapi.co/api/v2/type/fighting')
-    fighting_data = fighting_data_response.json()
     fighting_pokemon = fighting_data['pokemon']
     min_weight = None
     max_weight = None
