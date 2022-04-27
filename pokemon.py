@@ -26,7 +26,7 @@ def fetch_data(url):
         print("There is an error connecting to the API. Please try again later.")
         return
 
-def pregunta_1():
+def first_question():
     response = requests.get('https://pokeapi.co/api/v2/pokemon/?limit=1126')
     response_data = response.json()
     pokemons = response_data['results']
@@ -37,7 +37,7 @@ def pregunta_1():
             pokemon_count += 1
     return pokemon_count
 
-def pregunta_2():
+def second_question():
     raichu_data = fetch_data(
         'https://pokeapi.co/api/v2/pokemon-species/raichu')
     egg_groups = raichu_data['egg_groups']
@@ -52,7 +52,7 @@ def pregunta_2():
     return len(list(set(pokemon_species_names)))
 
 
-def pregunta_3():
+def third_question():
     fighting_data = fetch_data(
         'https://pokeapi.co/api/v2/type/fighting')
     fighting_pokemon = fighting_data['pokemon']
